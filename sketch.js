@@ -96,6 +96,12 @@ let handObj = {
     }
   }
 };
+let joint = {
+  'name': '<ruby>関節<rt>かんせつ</rt></ruby>',
+  'drawJoint': function() {
+    line(410, 270, 490, 360);
+  }
+}
 let parts = Object.keys(handObj);
 let screen = 0;
 let currentPart;
@@ -112,14 +118,8 @@ const rippleObjInit = {
   flag: false, 
   drawRipple: function(maxIndex) {} 
 };
-let ripples = [];
-for(let i = 0; i < rippleNumber; i++){
-  ripples[i] = rippleObjInit;
-}
-let specialRipple = [];
-for(let i = 0; i < colorNumber; i++){
-  specialRipple[i] = rippleObjInit;
-}
+let ripples = new Array(rippleNumber).fill(rippleObjInit);
+let specialRipple = new Array(colorNumber).fill(rippleObjInit);
 let specialRippleFlag = false;
 let clearing = rippleObjInit;
 let Ncount = 0;
@@ -251,8 +251,19 @@ function partInit(part) {
     break;
   }
   handObj[part].col = col;
-  if(screen3Obj.flag0){  
+  if(screen3Obj.setFlag){  
     let sliders = screen3Obj[part].sliders;
+    sliders[0].value(col[0]);
+    sliders[1].value(col[1]);
+    sliders[2].value(col[2]);
+  }
+}
+
+function jointInit() {
+  let col = colorList[7];
+  joint.col = col;
+  if(screen4Obj.setFlag){  
+    let sliders = joint.sliders;
     sliders[0].value(col[0]);
     sliders[1].value(col[1]);
     sliders[2].value(col[2]);
@@ -299,62 +310,98 @@ let buttonObj = {
   }
 };
 
-let screen3Obj = {
-  'flag0': false,
-  'flag': false,
-  'setObject': function(part) {
-    let object = {
-      'name': {},
-      'sliders': []
-    };
-    let name = createElement('font', handObj[part].name);
-    name.addClass("myFontStyle");
-    name.position(20, 10);
-    object.name = name;
+class SetObjectClass{
+  constructor(part){
+    this.name = createElement('font', part.name);
+    this.name.addClass("myFontStyle");
+    this.name.position(20, 10);
+    this.sliders = [];
     for(let i = 0; i < 3; i++){
-      let slider = createSlider(0, 255, handObj[part].col[i]);
+      let slider = createSlider(0, 255, part.col[i]);
       slider.addClass("mySliderStyle");
       slider.position(80, 200 + 60 * i);
-      object.sliders[i] = slider;
-    }
-    this[part] = object;
-  },
-  'hide': function() {
-    if(this.flag){
-      let object = this[currentPart];
-      object.name.hide();
-      object.sliders[0].hide();
-      object.sliders[1].hide();
-      object.sliders[2].hide();
-      this.flag = false;
-    }
-  },
-  'show': function() {
-    if(!this.flag){
-      let object = this[currentPart];
-      object.name.show();
-      object.sliders[0].show();
-      object.sliders[1].show();
-      object.sliders[2].show();
-      this.flag = true;
+      this.sliders[i] = slider;
     }
   }
-};
+}
+
+class Screen3ObjClass{
+  constructor(){
+    this.setFlag = false;
+    this.hideFlag = false;
+    for(let part of parts){
+      this[part] = {};
+    }
+  }
+  hide() {
+    if(this.hideFlag){
+      let object = this[currentPart];
+      this.hide1(object);
+      this.hideFlag = false;
+    }
+  }
+  show() {
+    if(!this.hideFlag){
+      let object = this[currentPart];
+      this.show1(object);
+      this.hideFlag = true;
+    }
+  }
+  hide1(object) {
+    object.name.hide();
+    object.sliders[0].hide();
+    object.sliders[1].hide();
+    object.sliders[2].hide();
+  }
+  show1(object) {
+    object.name.show();
+    object.sliders[0].show();
+    object.sliders[1].show();
+    object.sliders[2].show();
+  }
+}
+
+class Screen4ObjClass extends Screen3ObjClass{
+  constructor(){
+    super();
+    for(let part of parts){
+      delete this[part];
+    }
+    this.joint = new SetObjectClass();
+  }
+  hide() {
+    if(this.hideFlag){
+      let object = this.joint;
+      this.hide1(object);
+      this.hide2(object);
+      this.hideFlag = false;
+    }
+  }
+  show() {
+    if(!this.hideFlag){
+      let object = this.joint;
+      this.show1(object);
+      this.hide2(object);
+      this.hideFlag = true;
+    }
+  }
+  hide2(object) {
+    
+  }
+  show2(object) {
+    
+  }
+}
+
+let screen3Obj = new Screen3ObjClass();
 
 function trajectorySwitching() {
   if(trajectoryFlag){
     buttonObj.buttons[2][3].html("<ruby>軌<rt>き</rt>跡<rt>せき</rt></ruby>あり");
-  }　else{
+  } else{
     buttonObj.buttons[2][3].html("<ruby>軌<rt>き</rt>跡<rt>せき</rt></ruby>なし");
   }
   trajectoryFlag = !trajectoryFlag;
-}
-
-function resetSketch() {
-  noLoop();
-  clear();
-  setup();
-  loop();
 }
 
 function drawPoses(oneHandPoses, alphaValue) {
@@ -390,7 +437,7 @@ function setup() {
   video.hide();
   frameRate(frameNumber);
   init();
-  screen3Obj.flag0 = true;
+  screen3Obj.setFlag = true;
   clearing = new ClearClass();
   
   buttonObj.buttons[0] = [];
@@ -414,7 +461,7 @@ function setup() {
     let button = buttonObj.setButton(handObj[part].name, 110, 120 + bool * 230, Y, partSetting(part));
     buttonObj.buttons[2].push(button);
     Y += 80 * bool;
-    screen3Obj.setObject(part);
+    screen3Obj[part] = new SetObjectClass();
   }
 }
 
@@ -540,7 +587,7 @@ function draw() {
       
       image(img, 400, 150);
       stroke(col);
-      strokeWeight(10);
+      strokeWeight(12);
       handObj[currentPart].drawLine();
       handObj[currentPart].col = col;
     }
