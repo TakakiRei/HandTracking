@@ -5,10 +5,25 @@ html, body {
 canvas {
   display: block;
 }
-button.myButtonStyle {
+button {
   height: 40px; 
   font-size: 20px;
   display: none;
+}
+button.myButtonStyle {}
+button.myButtonStyle2 {
+  width: 20px;
+  font-size: 12px;
+  border: 1px solid black;
+}
+button.myButtonStyle3 {
+  width: 70px;
+  height: 70px;
+  font-size: 30px;
+  border: 1px solid black;
+}
+button:active {
+  background-color: rgb(180, 180, 180); 
 }
 font.myFontStyle {
   font-size: 52px;  
