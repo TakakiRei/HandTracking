@@ -1,5 +1,4 @@
-const SRprobability = 0.01;
-const MCprobability = 0.05;
+const rainbowProb = 0.01;
 
 const colorNumber = 8;
 const rainbow = colorList.slice(0, colorNumber);
@@ -14,8 +13,8 @@ let ripples = new Array(rippleNumber).fill(rippleObjInit);
 let specialRipple = new Array(colorNumber).fill(rippleObjInit);
 specialRipple.flag = false;
 
-let Ncount = 0;
-let Scount = 0;
+let NormalCount = 0;
+let SpecialCount = 0;
 let centerX, centerY;
 
 class RippleClass{
@@ -49,9 +48,9 @@ class NormalRippleClass extends RippleClass{
     this.video = this.setRipple(X, Y, col);
   }
   setRipple(X, Y, col) {
-    let createRipple = (X, Y, col, i) => {
+    const createRipple = (X, Y, col, i) => {
       return () => {
-        let alphaValue = 255 * (1 - i / this.maxIndex);
+        const alphaValue = 255 * (1 - i / this.maxIndex);
         noStroke();
         fill(col[0], col[1], col[2], alphaValue);
         ellipse(X, Y, 6 * (1 + i));
@@ -69,7 +68,7 @@ class SpecialRippleClass extends RippleClass{
     this.video = this.setRipple(X, Y, col);
   }
   setRipple(X, Y, col) {
-    let createRipple = (X, Y, col, i) => {
+    const createRipple = (X, Y, col, i) => {
       return () => {
         noStroke();
         fill(col);
@@ -89,9 +88,9 @@ class ClearClass extends RippleClass{
     this.video = this.setRipple();
   }
   setRipple() {
-    let createRipple = (X, Y, col, i) => {
+    const createRipple = (X, Y, col, i) => {
       return () => {
-        let alphaValue = 255 * (1 - i / this.maxIndex);
+        const alphaValue = 255 * (1 - i / this.maxIndex);
         noStroke();
         fill(255, 255, 255, alphaValue);
         rect(0, 0, width, height);
@@ -102,21 +101,21 @@ class ClearClass extends RippleClass{
   }
 }
 
-let clearing = new ClearClass();
+const clearing = new ClearClass();
 
 function mouseClicked() {
   if(screen == 1 && !specialRipple.flag && !clearing.flag){
     centerX = mouseX;
     centerY = mouseY;
-    if(random() < SRprobability){
-      Scount = 0;
+    if(random() < rainbowProb){
+      SpecialCount = 0;
       specialRipple.flag = true;
     } else{
-      let col = random(colorList);
-      ripples[Ncount] = new NormalRippleClass(centerX, centerY, col);
-      Ncount++;
-      if(Ncount >= rippleNumber){
-        Ncount = 0;
+      const col = random(colorList);
+      ripples[NormalCount] = new NormalRippleClass(centerX, centerY, col);
+      NormalCount++;
+      if(NormalCount >= rippleNumber){
+        NormalCount = 0;
       }
     }
   }
@@ -127,10 +126,10 @@ function drawRipples() {
     ripples[i].drawRipple();
   }
   if(specialRipple.flag){
-    if(Scount < colorNumber){
-      let col = rainbow[Scount];
-      specialRipple[Scount] = new SpecialRippleClass(centerX, centerY ,col);
-      Scount++;
+    if(SpecialCount < colorNumber){
+      let col = rainbow[SpecialCount];
+      specialRipple[SpecialCount] = new SpecialRippleClass(centerX, centerY ,col);
+      SpecialCount++;
     }
     for(let i = 0; i < colorNumber; i++){
       specialRipple[i].drawRipple();
@@ -145,3 +144,4 @@ function drawRipples() {
   } 
   clearing.drawRipple();
 }
+
