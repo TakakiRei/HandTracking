@@ -1,23 +1,135 @@
 class SetObjectClass {
   constructor(part) {
-    this.label = createElement("font", part.label);
-    this.label.addClass("myFontStyle");
-    this.label.position(20, 10);
-    this.leftButton = this.setButton("◀ ", 50, ()=>{});
-    this.rightButton = this.setButton("▶ ", 300, ()=>{});
-    this.sliders = [];
+    const l = 180;
+
+    this.btnNumber = 4;
+    const leftBtnPosX = sldPosX;
+    const shiftBtnWidth = 30;
+    const btnSize = btnHeight;
+    const edgeBtnSpace = 10;
+    const middleBtnSpace = 20;
+    const rightBtnPosX = leftBtnPosX + shiftBtnWidth + btnSize * this.btnNumber + middleBtnSpace * (this.btnNumber - 1) + edgeBtnSpace * 2;
+    const posY = specialbtnPosY;
+
+    this.isPressedColor = this.specifyRGB([l, l, l]);
+    this.shownColorIndex = 0;
+    this.selectedColorIndex = this.identifyIndex(part.col);
+    this.pDeltaIndex = -1;
+
+    this.label = this.setLabel(part, 20, 10);
+    this.sliders = this.setSliders(part);
+    this.colorButtons = this.setColorButtons(leftBtnPosX + shiftBtnWidth + edgeBtnSpace, posY, btnSize, middleBtnSpace);
+    this.leftButton = this.setShiftButton("◀", leftBtnPosX, posY, shiftBtnWidth, -1);
+    this.rightButton = this.setShiftButton("▶", rightBtnPosX, posY, shiftBtnWidth, 1);  
+    this.shiftColor(0)();
+  }
+  specifyRGB(col) {
+    const R = col[0];
+    const G = col[1];
+    const B = col[2];
+    return "rgb(" + R + "," + G + "," + B + ")";
+  }
+  identifyIndex(col){
+    for (let i in colorList) {
+      let j;
+      for (j = 0; j < 3; j++) {
+        if(colorList[i][j] != col[j]){
+          break;
+        }
+      }
+      if(j == 3){
+        return i;
+      }
+    }
+    return -1;
+  }
+  setLabel(part, posX, posY){
+    let label = createElement("font", part.label);
+    label.addClass("myFontStyle");
+    label.position(posX, posY);
+    return label;
+  }
+  setColorButtons(posX0, posY, size, space) {
+    let posX = posX0;
+    let buttons = [];
+    for (let i = 0; i < this.btnNumber; i++) {
+      let button = createButton('');
+      button.addClass("myButtonStyle");
+      button.position(posX, posY);
+      posX += size + space;
+      buttons[i] = button;
+    }
+    return buttons;
+  }
+  setSliders(part) {
+    const posX = sldPosX + fontSize;
+    let sliders = [];
     for (let i = 0; i < 3; i++) {
+      const posY = sldPosY + sldDeltaY * i;
       let slider = createSlider(0, 255, part.col[i]);
       slider.addClass("mySliderStyle");
-      slider.position(80, sldPosY + sldDeltaY * i);
-      this.sliders[i] = slider;
+      slider.position(posX, posY);
+      sliders[i] = slider;
+    }
+    return sliders;
+  }
+  changeBorder(){
+    const deltaIndex = this.selectedColorIndex - this.shownColorIndex;
+    const drawBorder = (deltaIndex, w, col) => {
+      if(deltaIndex >= 0 && deltaIndex < this.btnNumber){
+        let button = this.colorButtons[deltaIndex];
+        button.style("border", w + "px solid " + col);
+      }
+    }
+
+    if(this.pDeltaIndex != deltaIndex){
+      drawBorder(deltaIndex, 4, "white");
+      drawBorder(this.pDeltaIndex, 1, "black");
+      this.pDeltaIndex = deltaIndex;
     }
   }
-  setButton(label, posX, func) {
+  changeColor(col){
+    return () => {
+      for (let i in this.sliders) {
+        this.sliders[i].value(col[i]);
+      }
+      this.selectedColorIndex = this.identifyIndex(col);
+      this.changeBorder();
+    }
+  }
+  shiftColor(step){
+    return () => {
+      const maxIndex = colorList.length - this.btnNumber;
+      let index = this.shownColorIndex + step;
+      if(index <= 0){
+        index = 0;
+        this.leftButton.style("background-color", this.isPressedColor);
+      } else if(index >= maxIndex){
+        index = maxIndex;
+        this.rightButton.style("background-color", this.isPressedColor);
+      } else {
+        this.leftButton.style("background-color", "white");
+        this.rightButton.style("background-color", "white");
+      }
+
+      if(!(this.shownColorIndex == index && step)){
+        for (let i in this.colorButtons) {
+          let col = colorList[index + Number(i)];
+          let button = this.colorButtons[i];
+          button.style("background-color", this.specifyRGB(col));
+          button.mouseClicked(this.changeColor(col));
+        }
+        this.shownColorIndex = index;
+        this.changeBorder();
+      }
+    }
+  }
+  setShiftButton(label, posX, posY, w, step) {
     let button = createButton(label);
     button.addClass("myButtonStyle2");
-    button.position(posX, 100);
-    button.mouseClicked(func);
+    button.position(posX, posY);
+    button.style("width", w + "px");
+    button.mouseClicked(this.shiftColor(step));
     return button;
   }
 }
@@ -42,6 +154,9 @@ class Screen3ObjClass {
   }
   hide1(object) {
     object.label.hide();
+    for (let button of object.colorButtons) {
+      button.hide();
+    }
     object.leftButton.hide();
     object.rightButton.hide();
     for (let slider of object.sliders) {
@@ -50,6 +165,9 @@ class Screen3ObjClass {
   }
   show1(object) {
     object.label.show();
+    for (let button of object.colorButtons) {
+      button.show();
+    }
     object.leftButton.show();
     object.rightButton.show();
     for (let slider of object.sliders) {
@@ -61,31 +179,35 @@ class Screen3ObjClass {
 class SetObjectClass2 extends SetObjectClass {
   constructor(part) {
     super(part);
-    const shapeLabels = ["〇", "☐", "△", "✕"];
-    this.previousShape = 0;
-    this.shapeButtons = [];
-    this.isPressedColor = this.specifyRGB(180);
-    for (let i in shapeLabels) {
-      let button = createButton(shapeLabels[i]);
-      button.addClass("myButtonStyle3");
-      button.position(350 + 70 * i, 170);
-      button.mouseClicked(this.changeShape(i));
-      this.shapeButtons[i] = button;
-    }
-    this.shapeButtons[0].style("background-color", this.isPressedColor);
-  }
-  specifyRGB(l) {
-    return "rgb(" + l + "," + l + "," + l + ")";
+    this.pShape = 1;
+    this.shapeButtons = this.setShapeButton();
+    this.changeShape(0)();
   }
   changeShape(i) {
     return () => {
       joint.shape = Number(i);
-      if (this.previousShape != i) {
-        this.shapeButtons[this.previousShape].style("background-color", "white");
+      if (this.pShape != i) {
+        this.shapeButtons[this.pShape].style("background-color", "white");
         this.shapeButtons[i].style("background-color", this.isPressedColor);
-        this.previousShape = i;
+        this.pShape = i;
       }
     };
+  }
+  setShapeButton(){
+    const btnSize = 70;
+    const posY = specialbtnPosY;
+    const shapeLabels = ["〇", "☐", "△", "✕"];
+    let buttons = [];
+    for (let i in shapeLabels) {
+      let posX = 350 + btnSize * i;
+      let button = createButton(shapeLabels[i]);
+      button.addClass("myButtonStyle3");
+      button.position(posX, posY);
+      button.style("width", btnSize + "px");
+      button.mouseClicked(this.changeShape(i));
+      buttons[i] = button;
+    }
+    return buttons;
   }
 }
 
