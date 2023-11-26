@@ -7,20 +7,20 @@ canvas {
 }
 button {
   height: 40px; 
-  font-size: 20px;
+  border: 1px solid black;
   display: none;
 }
-button.myButtonStyle {}
+button.myButtonStyle {
+  width: 40px;
+  font-size: 20px;
+}
 button.myButtonStyle2 {
-  width: 20px;
-  font-size: 12px;
-  border: 1px solid black;
+  font-size: 16px;
+  padding-left: 5px
 }
 button.myButtonStyle3 {
-  width: 70px;
   height: 70px;
   font-size: 30px;
-  border: 1px solid black;
 }
 button:active {
   background-color: rgb(180, 180, 180); 
