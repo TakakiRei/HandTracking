@@ -15,7 +15,8 @@ const colorList = [
 ];
 const canvasWidth = 640;
 const canvasHeight = 480;
-const sldPosY = 200;
+const sldPosX = 30;
+const sldPosY = 210;
 const sldDeltaY = 60;
 const btnPosX = 120;
 const btnWidth = 110;
@@ -23,6 +24,8 @@ const btnDeltaX = btnPosX + btnWidth;
 const btnHeight = 40;
 const btnPosY = 60;
 const btnDeltaY = 80;
+const specialbtnPosY = 140;
+const fontSize = 40;
 
 const frameNumber = 30;
 const halfFrameNumber = frameNumber / 2;
@@ -129,10 +132,8 @@ function partInit(part) {
   const col = handObj[part].initCol;
   handObj[part].col = col;
   if (screen3Obj) {
-    let sliders = screen3Obj[part].sliders;
-    sliders[0].value(col[0]);
-    sliders[1].value(col[1]);
-    sliders[2].value(col[2]);
+    let handPart = screen3Obj[part];
+    handPart.changeColor(col)();
   }
 }
 
@@ -142,15 +143,10 @@ function jointInit() {
   if (screen4Obj) {
     let joint = screen4Obj.joint;
     joint.changeShape(0)();
-    let sliders = joint.sliders;
-    sliders[0].value(col[0]);
-    sliders[1].value(col[1]);
-    sliders[2].value(col[2]);
+    joint.changeColor(col)();
   }
 }
 
 function preload() {
   handImg = loadImage('./assets/hand.png');
-  flowerImg = loadImage('./assets/flower.png');
-  botabonImg = loadImage('./assets/botabon.png');
 }
