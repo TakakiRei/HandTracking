@@ -1,13 +1,8 @@
-const weight = 1;
-const size = btnHeight - 2 * weight;
-const diameter = btnHeight - joint.weight;
+const l = 128;
+const backgroundAlpha = 180;
 
-function drawRect(X, Y, col){
-  stroke(0);
-  strokeWeight(weight);
-  fill(col);
-  rect(X, Y, size);
-}
+const weight = 1;
+const diameter = btnHeight - joint.weight;
 
 function slidersColor(sliders){
   let R = sliders[0].value();
@@ -21,33 +16,36 @@ function drawSettingScreen(part){
     screen3Obj.hide(part);
     screen4Obj.hide();
     noStroke();
-    fill(128, 128, 128, 180);
+    fill(l, l, l, backgroundAlpha);
     rect(0, 0, width, height);
 
     if (screen == 2) {
       let leftX = btnDeltaX + 20 + weight;
-      let Y = btnPosY + weight;
+      let posY = btnPosY + weight;
+      stroke(0);
+      strokeWeight(weight);
       for (let i in parts) {
         let part = parts[i];
         let bool = i % 2;
-        let X = leftX + btnDeltaX * bool;
-        drawRect(X, Y, handObj[part].col);
-        Y += btnDeltaY * bool;
+        let posX = leftX + btnDeltaX * bool;
+        fill(handObj[part].col);
+        rect(posX, posY, btnHeight);
+        posY += btnDeltaY * bool;
       }
       
-      //let w = btnHeight - joint.weight;
       joint.drawJoint(270, 320, diameter);
     } else {
+      const posX = sldPosX;
       stroke(0);
       strokeWeight(weight);
-      textSize(40);
+      textSize(fontSize);
       let colorText = ["R", "G", "B"];
       for (let i in colorText) {
-        let Y = sldPosY + sldDeltaY * i + 32;
+        let posY = sldPosY + sldDeltaY * i + 32;
         let col = [0, 0, 0];
         col[i] = 255;
         fill(col);
-        text(colorText[i], 40, Y);
+        text(colorText[i], posX, posY);
       }
       
       if (screen == 3) {
@@ -57,14 +55,14 @@ function drawSettingScreen(part){
         image(handImg, 400, 150);
         stroke(col);
         strokeWeight(12);
-        handObj[part].drawLine();
         handObj[part].col = col;
+        handObj[part].drawLine();
       } else {
         screen4Obj.show();
         let sliders = screen4Obj.joint.sliders;
         let col = slidersColor(sliders);
         joint.col = col;
-        joint.drawJoint(490, 320, 60);
+        joint.drawJoint(490, 300, 80);
       }
     }
   }
